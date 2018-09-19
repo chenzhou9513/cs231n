@@ -77,6 +77,7 @@ class KNearestNeighbor(object):
         #####################################################################
     return dists
 
+
   def compute_distances_one_loop(self, X):
     """
     Compute the distance between each test point in X and each training point
@@ -87,13 +88,15 @@ class KNearestNeighbor(object):
     num_test = X.shape[0]
     num_train = self.X_train.shape[0]
     dists = np.zeros((num_test, num_train))
-    for i in xrange(num_test):
+    for i in range(num_test):
       #######################################################################
       # TODO:                                                               #
       # Compute the l2 distance between the ith test point and all training #
       # points, and store the result in dists[i, :].                        #
       #######################################################################
-      dists[i] = np.sqrt(np.sum((X[i] - self.X_train)**2, axis=1))
+        
+        dists[i] = np.sqrt(np.sum((X[i] - self.X_train)**2,axis=1))
+        
       #######################################################################
       #                         END OF YOUR CODE                            #
       #######################################################################
@@ -128,8 +131,10 @@ class KNearestNeighbor(object):
     #~ dists = np.sqrt((diff ** 2).sum(axis=2))
     
     # split (p-q)^2 to p^2 + q^2 - 2pq
-    dists = np.sqrt((X**2).sum(axis=1, keepdims=True) + (self.X_train**2).sum(axis=1) - 2 * X.dot(self.X_train.T))
     
+    
+    dists = np.sqrt(np.sum(X**2,axis=1).reshape([-1,1]) - 2 * np.dot(X,self.X_train.T) + np.sum(self.X_train**2,axis=1) )
+        
     #########################################################################
     #                         END OF YOUR CODE                              #
     #########################################################################
@@ -150,7 +155,7 @@ class KNearestNeighbor(object):
     """
     num_test = dists.shape[0]
     y_pred = np.zeros(num_test)
-    for i in xrange(num_test):
+    for i in range(num_test):
       # A list of length k storing the labels of the k nearest neighbors to
       # the ith test point.
       closest_y = []
