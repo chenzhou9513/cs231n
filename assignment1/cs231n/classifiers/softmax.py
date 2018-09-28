@@ -67,24 +67,15 @@ def softmax_loss_vectorized(W, X, y, reg):
   #############################################################################
   fxw = np.dot(X,W) 
   fxw = fxw - np.max(fxw,axis = 1).reshape(len(fxw),1)
-  
   loss += np.sum(-fxw[list(range(len(fxw))),y] + np.log(np.sum(np.exp(fxw),axis=1)))
   loss /= X.shape[0] 
   loss +=  reg * np.sum(W * W)
-
-
-
   sum_f = np.sum(np.exp(fxw), axis=1, keepdims=True)
   p = np.exp(fxw)/sum_f
   ind = np.zeros_like(p)
   ind[np.arange(X.shape[0]), y] = 1
   dW = X.T.dot(p - ind)
-    
-    
   dW = dW/X.shape[0]  + 2*reg* W 
-
-
-  
   #############################################################################
   #                          END OF YOUR CODE                                 #
   #############################################################################

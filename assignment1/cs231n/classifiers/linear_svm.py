@@ -34,6 +34,8 @@ def svm_loss_naive(W, X, y, reg):
       margin = scores[j] - correct_class_score + 1 # note delta = 1
       if margin > 0:
         loss += margin
+        dW[:,j] = dW[:,j]+X[i].T 
+        dW[:,y[i]] = dW[:,y[i]]-X[i].T 
 
   # Right now the loss is a sum over all training examples, but we want it
   # to be an average instead so we divide by num_train.
@@ -41,6 +43,9 @@ def svm_loss_naive(W, X, y, reg):
 
   # Add regularization to the loss.
   loss += reg * np.sum(W * W)
+  
+  dW /= num_train
+  dW += 2*reg*W
 
   #############################################################################
   # TODO:                                                                     #
@@ -63,18 +68,37 @@ def svm_loss_vectorized(W, X, y, reg):
   """
   loss = 0.0
   dW = np.zeros(W.shape) # initialize the gradient as zero
-
   #############################################################################
   # TODO:                                                                     #
   # Implement a vectorized version of the structured SVM loss, storing the    #
   # result in loss.                                                           #
   #############################################################################
-  pass
+  num_classes = W.shape[1]
+  num_train = X.shape[0]
+  score = np.dot(X,W)
+  correct = score[list(range(num_train)),y]
+  margin = score-correct.reshape(num_train,1)+1
+  margin_select = margin<=0
+  margin[margin_select] = 0
+  margin[list(range(num_train)),y]=0
+  loss = np.sum(margin)
+  loss /= num_train
+  loss += reg * np.sum(W * W) 
+
+  
+  
   #############################################################################
   #                             END OF YOUR CODE                              #
   #############################################################################
 
-
+  dW = np.zeros(W.shape)
+  mat = np.zeros((num_train, num_classes))
+  mat[~margin_select] = 1
+  mat[list(range(num_train)),y]=0
+  mat[list(range(num_train)),y] = -np.sum(mat,axis=1)
+  dW = (X.T).dot(mat)
+  dW /= num_train
+  dW += 2*reg*W
   #############################################################################
   # TODO:                                                                     #
   # Implement a vectorized version of the gradient for the structured SVM     #
