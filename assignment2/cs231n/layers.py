@@ -500,7 +500,34 @@ def conv_forward_naive(x, w, b, conv_param):
     # TODO: Implement the convolutional forward pass.                         #
     # Hint: you can use the function np.pad for padding.                      #
     ###########################################################################
-    pass
+
+    N = x.shape[0]
+    H = x.shape[2]
+    W = x.shape[3]
+
+    F = w.shape[0]
+    HH = w.shape[2]
+    WW = w.shape[3]
+
+    pad = conv_param['pad']
+    stride = conv_param['stride']
+
+    h_out = int(1+(H+2*pad-HH)/stride)
+    w_out = int(1+(W+2*pad-WW)/stride)
+
+    out = np.zeros(shape=[N,F,h_out,w_out])
+
+
+    x_padding = np.pad(x,((0,0),(0,0),(pad,pad),(pad,pad)),'constant',constant_values=0)
+
+    for batch in range(N):
+        for filter in range(F):
+            for height in range(h_out):
+                for width in range(w_out):
+                     out[batch,filter,height,width] = np.sum(x_padding[batch,:,height*stride:height*stride+HH,width*stride:width*stride+WW]*w[filter,:,:,:])
+
+            out[batch,filter,:,:]+=b[filter]
+
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################
@@ -525,7 +552,35 @@ def conv_backward_naive(dout, cache):
     ###########################################################################
     # TODO: Implement the convolutional backward pass.                        #
     ###########################################################################
-    pass
+
+
+    x,w,b,conv_param=cache
+    N,F,h_out,w_out = dout.shape
+
+    HH = w.shape[2]
+    WW = w.shape[3]
+    stride = conv_param['stride']
+    pad = conv_param['pad']
+
+    dw = np.zeros_like(w)
+    db = np.zeros_like(b)
+
+    x_pad = np.pad(x,((0,0),(0,0),(pad,pad),(pad,pad)),mode="constant",constant_values=0)
+    dx_pad = np.zeros_like(x_pad)
+
+
+    for batch in range(N):
+        for filter in range(F):
+            for height in range(h_out):
+                for width in range(w_out):
+                    dw[filter,:,:,:]+=x_pad[batch,:,height*stride:height*stride+HH,width*stride:width*stride+WW]*dout[batch,filter,height,width]
+                    dx_pad[batch,:,height*stride:height*stride+HH,width*stride:width*stride+WW] +=w[filter,:,:,:]*dout[batch,filter,height,width]
+            db[filter] += np.sum(dout[batch,filter,:,:])
+
+    dx = dx_pad[:,:,pad:pad+x.shape[2],pad:pad+x.shape[3]]
+
+
+
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################
