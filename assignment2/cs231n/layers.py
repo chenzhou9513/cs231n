@@ -610,7 +610,31 @@ def max_pool_forward_naive(x, pool_param):
     ###########################################################################
     # TODO: Implement the max-pooling forward pass                            #
     ###########################################################################
-    pass
+
+
+    N = x.shape[0]
+    C = x.shape[1]
+    H = x.shape[2]
+    W = x.shape[3]
+
+
+    stride = pool_param['stride']
+
+    HH = pool_param['pool_height']
+    WW = pool_param['pool_width']
+
+
+    h_out = int(1+(H-HH)/stride)
+    w_out = int(1+(W-WW)/stride)
+
+    out = np.zeros(shape=[N,C,h_out,w_out])
+
+    for height in range(h_out):
+        for width in range(w_out):
+             out[:,:,height,width] = np.max(x[:,:,height*stride:height*stride+HH,width*stride:width*stride+WW],axis=(2,3))
+
+
+
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################
@@ -633,7 +657,35 @@ def max_pool_backward_naive(dout, cache):
     ###########################################################################
     # TODO: Implement the max-pooling backward pass                           #
     ###########################################################################
-    pass
+
+    x, pool_param = cache
+
+    N = x.shape[0]
+    C = x.shape[1]
+    H = x.shape[2]
+    W = x.shape[3]
+
+
+    stride = pool_param['stride']
+
+    HH = pool_param['pool_height']
+    WW = pool_param['pool_width']
+
+
+    h_out = int(1+(H-HH)/stride)
+    w_out = int(1+(W-WW)/stride)
+
+    dx = np.zeros_like(x)
+
+    for height in range(h_out):
+        for width in range(w_out):
+             x_max = np.max(x[:,:,height*stride:height*stride+HH,width*stride:width*stride+WW],axis=(2,3))
+
+             x_max = x_max.reshape([N,C,1,1])
+             x_max_mask = (x_max==(x[:,:,height*stride:height*stride+HH,width*stride:width*stride+WW]))
+
+             dx[:,:,height*stride:height*stride+HH,width*stride:width*stride+WW]+=x_max_mask*dout[:,:,height,width].reshape([N,C,1,1])
+
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################
